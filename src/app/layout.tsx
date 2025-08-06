@@ -1,12 +1,24 @@
-import './globals.css'
-import Link from 'next/link'
+import type { Metadata } from "next";
+// import { Geist, Geist_Mono } from "next/font/google"; // Zakomentuj, jeśli nie używasz
+import "./globals.css"; // Poprawny import CSS
+import Link from 'next/link';
 
-export const metadata = {
+// Jeśli używasz Geist fontów, odkomentuj i upewnij się, że są zainstalowane
+// const geistSans = Geist({
+//   variable: "--font-geist-sans",
+//   subsets: ["latin"],
+// });
+// const geistMono = Geist_Mono({
+//   variable: "--font-geist-mono",
+//   subsets: ["latin"],
+// });
+
+export const metadata: Metadata = {
   title: 'Typy Piłkarskie',
   description: 'Najlepsze typy piłkarskie z analizą i historią',
-}
+};
 
-export default function RootLayout({ children }: { children: React.ReactNode }){
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pl">
       <body className="bg-gray-900 text-white font-sans">
@@ -31,5 +43,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }){
         </footer>
       </body>
     </html>
-  )
+  );
 }
+

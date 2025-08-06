@@ -1,47 +1,80 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 
+// Definicja typu dla danych meczu
 type Typ = {
-  data: string
-  gospodarz: string
-  gosc: string
-  typ: string
-  kurs: number
-  prawdopodobienstwo: number
-  analiza: string
-}
+  data: string;
+  gospodarz: string;
+  gosc: string;
+  typ: string;
+  kurs: number;
+  prawdopodobienstwo: number;
+  analiza: string;
+};
 
 export default function HomePage() {
-  const [typy, setTypy] = useState<Typ[]>([])
-  const [loading, setLoading] = useState(true)
+  const [typy, setTypy] = useState<Typ[]>([]); // Inicjalizacja jako pusta tablica
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null); // Dodaj stan dla błędów
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/typy')
-      .then(res => res.json())
-      .then(data => {
-        setTypy(data)
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error("Błąd podczas pobierania typów:", err)
-        setLoading(false)
-      })
-  }, [])
+    const fetchTypy = async () => {
+      try {
+        // WAŻNE: Użyj zmiennej środowiskowej NEXT_PUBLIC_API_URL
+        // To jest adres Twojego backendu na Render.com
+        // Upewnij się, że w Vercel zmienna NEXT_PUBLIC_API_URL ma wartość https://typy-app.onrender.com
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL + '/api/typy';
+        console.log('Attempting to fetch from:', apiUrl); // Loguj adres, aby sprawdzić w konsoli przeglądarki
+
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+          // Obsługa błędów HTTP (np. 404, 500)
+          const errorText = await response.text();
+          throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
+        }
+
+        const data = await response.json();
+
+        // WAŻNE: Zabezpiecz się przed błędem .map is not a function
+        if (Array.isArray(data)) {
+          setTypy(data);
+        } else {
+          // Jeśli API zwróciło coś, co nie jest tablicą
+          console.error("API returned data that is not an array:", data);
+          setError("Otrzymano nieprawidłowy format danych z serwera.");
+        }
+      } catch (err: any) {
+        console.error("Błąd podczas pobierania typów:", err);
+        setError(`Błąd ładowania typów: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTypy();
+  }, []); // Pusta tablica zależności oznacza, że useEffect uruchomi się tylko raz po zamontowaniu komponentu
+
+  if (loading) {
+    return <p className="text-center text-lg mt-8">Ładowanie typów...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500 text-lg mt-8">Błąd: {error}</p>;
+  }
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6">Typy na Jutro</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">Typy na Jutro</h1>
 
-      {loading ? (
-        <p>Ładowanie typów...</p>
-      ) : typy.length === 0 ? (
-        <p>Brak typów na jutro.</p>
+      {typy.length === 0 ? (
+        <p className="text-center text-lg mt-8">Brak typów na jutro.</p>
       ) : (
         <div className="space-y-4">
           {typy.map((mecz, index) => (
             <div
-              key={index}
+              key={index} // Lepiej używać unikalnego ID z danych, jeśli dostępne (np. mecz.id)
               className="bg-gray-800 p-4 rounded-md shadow-md border-l-4"
               style={{
                 borderColor:
@@ -66,5 +99,5 @@ export default function HomePage() {
         </div>
       )}
     </div>
-  )
+  );
 }
