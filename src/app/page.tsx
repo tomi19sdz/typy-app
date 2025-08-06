@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 // Definicja typu dla danych meczu
 type Typ = {
+  id: number; // Dodano ID dla unikalnego klucza
   data: string;
   gospodarz: string;
   gosc: string;
@@ -14,40 +15,38 @@ type Typ = {
 };
 
 export default function HomePage() {
-  const [typy, setTypy] = useState<Typ[]>([]); // Inicjalizacja jako pusta tablica
+  const [typy, setTypy] = useState<Typ[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // Dodaj stan dla błędów
+  const [error, setError] = useState<string | null>(null);
+  const [generatedAt, setGeneratedAt] = useState<string | null>(null); // Nowy stan na czas generowania
 
   useEffect(() => {
     const fetchTypy = async () => {
       try {
-        // WAŻNE: Użyj zmiennej środowiskowej NEXT_PUBLIC_API_URL
-        // To jest adres Twojego backendu na Render.com
-        // Upewnij się, że w Vercel zmienna NEXT_PUBLIC_API_URL ma wartość https://typy-app.onrender.com
         const apiUrl = process.env.NEXT_PUBLIC_API_URL + '/api/typy';
-        console.log('Attempting to fetch from:', apiUrl); // Loguj adres, aby sprawdzić w konsoli przeglądarki
+        console.log('Attempting to fetch from:', apiUrl);
 
         const response = await fetch(apiUrl);
 
         if (!response.ok) {
-          // Obsługa błędów HTTP (np. 404, 500)
           const errorText = await response.text();
           throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
         }
 
-        const data = await response.json();
+        const data = await response.json(); // Oczekujemy teraz { tips: [...], generated_at_utc: "..." }
 
-        // WAŻNE: Zabezpiecz się przed błędem .map is not a function
-        if (Array.isArray(data)) {
-          setTypy(data);
+        if (data && Array.isArray(data.tips)) {
+          // Filtrujemy typy z prawdopodobieństwem powyżej 60% dla strony głównej
+          const filteredTypy = data.tips.filter((typ: Typ) => typ.prawdopodobienstwo > 60);
+          setTypy(filteredTypy);
+          setGeneratedAt(data.generated_at_utc); // Ustaw czas generowania
         } else {
-          // Jeśli API zwróciło coś, co nie jest tablicą
-          console.error("API returned data that is not an array:", data);
+          console.error("API returned data in unexpected format:", data);
           setError("Otrzymano nieprawidłowy format danych z serwera.");
         }
-      } catch (err: unknown) { // Zmieniono 'any' na 'unknown'
+      } catch (err: unknown) {
         console.error("Błąd podczas pobierania typów:", err);
-        if (err instanceof Error) { // Dodano sprawdzenie typu błędu
+        if (err instanceof Error) {
           setError(`Błąd ładowania typów: ${err.message}`);
         } else {
           setError("Wystąpił nieznany błąd podczas ładowania typów.");
@@ -58,7 +57,27 @@ export default function HomePage() {
     };
 
     fetchTypy();
-  }, []); // Pusta tablica zależności oznacza, że useEffect uruchomi się tylko raz po zamontowaniu komponentu
+  }, []);
+
+  const formatGeneratedTime = (isoString: string | null) => {
+    if (!isoString) return 'Brak danych';
+    try {
+      const date = new Date(isoString);
+      // Formatowanie daty i czasu do czytelnego formatu lokalnego
+      return date.toLocaleString('pl-PL', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZoneName: 'shortOffset' // np. "CEST"
+      });
+    } catch (e) {
+      console.error("Błąd formatowania daty:", e);
+      return isoString; // Zwróć surowy string, jeśli formatowanie się nie powiedzie
+    }
+  };
 
   if (loading) {
     return <p className="text-center text-lg mt-8">Ładowanie typów...</p>;
@@ -73,12 +92,12 @@ export default function HomePage() {
       <h1 className="text-3xl font-bold mb-6 text-center">Typy na Jutro</h1>
 
       {typy.length === 0 ? (
-        <p className="text-center text-lg mt-8">Brak typów na jutro.</p>
+        <p className="text-center text-lg mt-8">Brak typów na jutro (prawdopodobieństwo &gt; 60%).</p>
       ) : (
         <div className="space-y-4">
-          {typy.map((mecz, index) => (
+          {typy.map((mecz) => (
             <div
-              key={index} // Lepiej używać unikalnego ID z danych, jeśli dostępne (np. mecz.id)
+              key={mecz.id}
               className="bg-gray-800 p-4 rounded-md shadow-md border-l-4"
               style={{
                 borderColor:
@@ -97,11 +116,16 @@ export default function HomePage() {
                 <strong>Typ:</strong> {mecz.typ} | <strong>Kurs:</strong> {mecz.kurs} |{' '}
                 <strong>Szansa:</strong> {mecz.prawdopodobienstwo}%
               </p>
-              <p className="mt-2 text-sm text-gray-300">{mecz.analiza}</p>
+              <p className="mt-2 text-sm text-gray-300 whitespace-pre-wrap">{mecz.analiza}</p>
             </div>
           ))}
         </div>
       )}
+      
+      {/* Informacja o czasie generowania na samym dole strony */}
+      <div className="mt-8 text-center text-gray-500 text-sm">
+        <p>Typy wygenerowano: {formatGeneratedTime(generatedAt)}</p>
+      </div>
     </div>
   );
 }

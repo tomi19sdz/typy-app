@@ -107,10 +107,11 @@ def root():
     return {"message": "Backend działa!"}
 
 @app.get("/api/typy")
-async def get_main_page_tips() -> List[Dict[str, Any]]:
+async def get_main_page_tips() -> Dict[str, Any]: # Zmieniono typ zwracany na Dict[str, Any]
     """
     Endpoint zwracający wygenerowane typy meczów dla strony głównej (prawdopodobieństwo > 60%).
     Typy są generowane tylko o określonych porach dnia.
+    Zwraca listę typów i czas ich generowania.
     """
     await _ensure_tips_generated_for_current_slot(is_analiza_page=False)
     current_date_utc, _ = get_current_utc_time_and_date()
@@ -126,15 +127,18 @@ async def get_main_page_tips() -> List[Dict[str, Any]]:
         target_slot = GENERATION_SLOTS_UTC[0] if GENERATION_SLOTS_UTC else None
 
     if target_slot is None:
-        return [] # Brak slotów, brak typów
+        return {"tips": [], "generated_at_utc": None} # Zwróć pusty słownik
 
-    return get_tips_for_current_slot(current_date_str, target_slot, "main_page_tips")
+    # Pobierz dane w nowej strukturze
+    data = get_tips_for_current_slot(current_date_str, target_slot, "main_page_tips")
+    return data # data będzie już słownikiem {"tips": [...], "generated_at_utc": "..."}
 
 @app.get("/api/typy-analiza")
-async def get_analiza_page_tips() -> List[Dict[str, Any]]:
+async def get_analiza_page_tips() -> Dict[str, Any]: # Zmieniono typ zwracany na Dict[str, Any]
     """
     Endpoint zwracający wygenerowane typy meczów dla zakładki Analiza (prawdopodobieństwo > 70% i rozszerzona analiza).
     Typy są generowane tylko o określonych porach dnia.
+    Zwraca listę typów i czas ich generowania.
     """
     await _ensure_tips_generated_for_current_slot(is_analiza_page=True)
     current_date_utc, _ = get_current_utc_time_and_date()
@@ -150,9 +154,11 @@ async def get_analiza_page_tips() -> List[Dict[str, Any]]:
         target_slot = GENERATION_SLOTS_UTC[0] if GENERATION_SLOTS_UTC else None
     
     if target_slot is None:
-        return [] # Brak slotów, brak typów
+        return {"tips": [], "generated_at_utc": None} # Zwróć pusty słownik
 
-    return get_tips_for_current_slot(current_date_str, target_slot, "analiza_page_tips")
+    # Pobierz dane w nowej strukturze
+    data = get_tips_for_current_slot(current_date_str, target_slot, "analiza_page_tips")
+    return data # data będzie już słownikiem {"tips": [...], "generated_at_utc": "..."}
 
 @app.post("/api/check-history")
 def trigger_check_history(date: Optional[str] = None):
