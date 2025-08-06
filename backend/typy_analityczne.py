@@ -1,4 +1,3 @@
-# ZMIEŃ TĘ LINIĘ:
 from backend.utils.football_api import pobierz_mecze_na_jutro # Zmieniono import na bezwzględny
 
 def generuj_typy_na_jutro():
