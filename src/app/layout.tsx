@@ -25,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Obrazek na samej górze strony */}
         <div className="w-full overflow-hidden">
           {/* Uzywamy Twojego pliku banner.png */}
+          {/* WAŻNE: Upewnij się, że plik banner.png znajduje się bezpośrednio w katalogu /public */}
           <img
             src="/banner.png"
             alt="Nagłówek strony"
