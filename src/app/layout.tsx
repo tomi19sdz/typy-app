@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
-// import { Geist, Geist_Mono } from "next/font/google"; // Zakomentuj, jeśli nie używasz
+// import { Geist, Geist_Mono } from "next/font/google"; // Zakomentuj, jeśli nie używasz tych fontów
 import "./globals.css"; // Poprawny import CSS
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Typy Piłkarskie',
+  description: 'Najlepsze typy piłkarskie z analizą i historią',
+};
 
 // Jeśli używasz Geist fontów, odkomentuj i upewnij się, że są zainstalowane
 // const geistSans = Geist({
@@ -12,11 +17,6 @@ import Link from 'next/link';
 //   variable: "--font-geist-mono",
 //   subsets: ["latin"],
 // });
-
-export const metadata: Metadata = {
-  title: 'Typy Piłkarskie',
-  description: 'Najlepsze typy piłkarskie z analizą i historią',
-};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
