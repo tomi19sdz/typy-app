@@ -9,21 +9,47 @@ export default function KontaktPage() {
     message: ''
   });
   const [submissionStatus, setSubmissionStatus] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Dodano stan do obsługi przycisku
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true); // Ustaw, że formularz jest wysyłany
     setSubmissionStatus('Wysyłanie wiadomości...');
-    // Tutaj w prawdziwej aplikacji wysyłałbyś dane do backendu (np. przez API)
-    // Na potrzeby tej symulacji, po prostu symulujemy wysyłkę
-    setTimeout(() => {
+
+    try {
+      const backendApiUrl = process.env.NEXT_PUBLIC_API_URL + '/api/send-email';
+
+      const response = await fetch(backendApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Wystąpił błąd podczas wysyłania wiadomości.');
+      }
+
       setSubmissionStatus('Wiadomość została wysłana pomyślnie! Dziękujemy za kontakt.');
       setFormData({ name: '', email: '', message: '' }); // Wyczyść formularz
-    }, 2000);
+
+    } catch (error: unknown) {
+      console.error("Błąd podczas wysyłania formularza:", error);
+      if (error instanceof Error) {
+        setSubmissionStatus(`Błąd: ${error.message}`);
+      } else {
+        setSubmissionStatus("Wystąpił nieznany błąd podczas wysyłania wiadomości.");
+      }
+    } finally {
+      setIsSubmitting(false); // Zakończ wysyłanie
+    }
   };
 
   return (
@@ -82,9 +108,12 @@ export default function KontaktPage() {
           </div>
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            disabled={isSubmitting} // Wyłącz przycisk podczas wysyłania
+            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white
+              ${isSubmitting ? 'bg-blue-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'}
+            `}
           >
-            Wyślij Wiadomość
+            {isSubmitting ? 'Wysyłanie...' : 'Wyślij Wiadomość'}
           </button>
         </form>
 
@@ -94,7 +123,15 @@ export default function KontaktPage() {
           </p>
         )}
 
-       
+        <div className="mt-8 text-center text-gray-400">
+          <p>Możesz również skontaktować się z nami bezpośrednio:</p>
+          <p className="mt-2">
+            <strong>Email:</strong> <a href="mailto:kontakt@typy-pilkarskie.pl" className="text-blue-400 hover:underline">kontakt@typy-pilkarskie.pl</a>
+          </p>
+          <p>
+            <strong>Telefon:</strong> <a href="tel:+48123456789" className="text-blue-400 hover:underline">+48 123 456 789</a>
+          </p>
+        </div>
       </div>
     </section>
   );
