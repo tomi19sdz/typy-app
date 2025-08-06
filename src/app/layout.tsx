@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pl">
       <body className="bg-gray-900 text-white font-sans">
         {/* Obrazek na samej górze strony */}
-        <div className="w-full overflow-hidden">
+        <div hidden className="w-full overflow-hidden">
           {/* Uzywamy Twojego pliku banner.png */}
           {/* WAŻNE: Upewnij się, że plik banner.png znajduje się bezpośrednio w katalogu /public */}
           <img
