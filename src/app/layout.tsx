@@ -3,28 +3,28 @@ import "./globals.css";
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Typy Koszykarskie', // Updated title to basketball
-  description: 'Najlepsze typy koszykarskie z analizą i historią', // Updated description
+  title: 'Typy Piłkarskie', // Zaktualizowano na typy piłkarskie
+  description: 'Najlepsze typy piłkarskie z analizą i historią', // Zaktualizowano opis
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pl">
       <body className="bg-gray-900 text-white font-sans">
-        {/* Image at the top of the page */}
+        {/* Obrazek na samej górze strony */}
         <div className="w-full overflow-hidden">
           {/* Uzywamy Twojego pliku banner.png */}
           <img
             src="/banner.png"
             alt="Nagłówek strony"
-            className="w-full h-auto object-cover" // Responsive image
+            className="w-full h-auto object-cover" // Responsywny obrazek
             onError={(e) => { e.currentTarget.src = 'https://placehold.co/1920x300/1a202c/e2e8f0?text=Brak+Obrazka'; }}
           />
         </div>
 
         <header className="bg-gray-800 shadow-md">
           <nav className="max-w-7xl mx-auto flex justify-between items-center p-4">
-            <div className="text-xl font-bold text-blue-600">Typy Koszykarskie</div> {/* Updated app name */}
+            <div className="text-xl font-bold text-blue-600">Typy Piłkarskie</div> {/* Zaktualizowano nazwę */}
             <ul className="flex space-x-6 text-sm font-medium">
               <li><Link href="/">Strona Główna</Link></li>
               <li><Link href="/analiza">Analiza</Link></li>
@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
 
         <footer className="text-center text-sm text-gray-500 py-4 border-t mt-12">
-          © {new Date().getFullYear()} Typy Koszykarskie. Wszelkie prawa zastrzeżone.
+          © {new Date().getFullYear()} Typy Piłkarskie. Wszelkie prawa zastrzeżone.
         </footer>
       </body>
     </html>
