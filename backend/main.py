@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict
-from backend.typy_analityczne import generuj_typy_na_jutro # Zmieniono import na bezwzględny
+# ZMIEŃ TĘ LINIĘ: Importuj bezpośrednio, jeśli uruchamiasz uvicorn z katalogu 'backend'
+from typy_analityczne import generuj_typy_na_jutro
 
 app = FastAPI()
 

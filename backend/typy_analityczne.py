@@ -1,4 +1,5 @@
-from backend.utils.football_api import pobierz_mecze_na_jutro # Zmieniono import na bezwzględny
+# ZMIEŃ TĘ LINIĘ: Importuj bezpośrednio z podkatalogu 'utils'
+from utils.football_api import pobierz_mecze_na_jutro
 
 def generuj_typy_na_jutro():
     """
