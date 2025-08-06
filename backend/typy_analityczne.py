@@ -1,5 +1,5 @@
-import random
-from backend.utils.football_api import pobierz_mecze_na_jutro
+# ZMIEŃ TĘ LINIĘ: Importuj bezpośrednio z podkatalogu 'utils', ponieważ jesteś już w 'backend'
+from utils.football_api import pobierz_mecze_na_jutro
 
 def generuj_typy_na_jutro():
     """
