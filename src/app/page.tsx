@@ -45,9 +45,13 @@ export default function HomePage() {
           console.error("API returned data that is not an array:", data);
           setError("Otrzymano nieprawidłowy format danych z serwera.");
         }
-      } catch (err: any) {
+      } catch (err: unknown) { // Zmieniono 'any' na 'unknown'
         console.error("Błąd podczas pobierania typów:", err);
-        setError(`Błąd ładowania typów: ${err.message}`);
+        if (err instanceof Error) { // Dodano sprawdzenie typu błędu
+          setError(`Błąd ładowania typów: ${err.message}`);
+        } else {
+          setError("Wystąpił nieznany błąd podczas ładowania typów.");
+        }
       } finally {
         setLoading(false);
       }
