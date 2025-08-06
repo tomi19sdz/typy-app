@@ -1,15 +1,17 @@
-from utils.football_api import pobierz_mecze_na_jutro
+# ZMIEŃ TĘ LINIĘ:
+from backend.utils.football_api import pobierz_mecze_na_jutro # Zmieniono import na bezwzględny
 
 def generuj_typy_na_jutro():
+    """
+    Generuje typy na jutro na podstawie pobranych meczów.
+    """
     mecze = pobierz_mecze_na_jutro()
     typy = []
-
     for fixture in mecze:
         home = fixture["teams"]["home"]
         away = fixture["teams"]["away"]
         league = fixture["league"]
         date = fixture["fixture"]["date"]
-
         # Przykład prostej logiki (rozbudujemy później)
         if home["winner"] is None and away["winner"] is None:
             analiza = f"{home['name']} w dobrej formie, grają u siebie. {away['name']} nie wygrał ostatnich meczów."
@@ -23,5 +25,4 @@ def generuj_typy_na_jutro():
                 "analiza": analiza
             }
             typy.append(typ)
-
     return typy

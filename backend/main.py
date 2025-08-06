@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict
-from .typy_analityczne import generuj_typy_na_jutro
+from backend.typy_analityczne import generuj_typy_na_jutro # Zmieniono import na bezwzględny
 
 app = FastAPI()
 
