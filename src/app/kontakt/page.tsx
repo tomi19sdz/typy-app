@@ -94,15 +94,7 @@ export default function KontaktPage() {
           </p>
         )}
 
-        <div className="mt-8 text-center text-gray-400">
-          <p>Możesz również skontaktować się z nami bezpośrednio:</p>
-          <p className="mt-2">
-            <strong>Email:</strong> <a href="mailto:kontakt@typy-pilkarskie.pl" className="text-blue-400 hover:underline">kontakt@typy-pilkarskie.pl</a>
-          </p>
-          <p>
-            <strong>Telefon:</strong> <a href="tel:+48123456789" className="text-blue-400 hover:underline">+48 123 456 789</a>
-          </p>
-        </div>
+       
       </div>
     </section>
   );
