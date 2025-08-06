@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 # W PRODUCTION ZAWSZE UŻYWAJ ZMIENNYCH ŚRODOWISKOWYCH!
 # Na razie dla testów pozostawiamy go tutaj, ale to nie jest bezpieczne w produkcji.
 API_KEY = "8dfc23b74ee7404e7ee7ab29d91532c2" # Upewnij się, że to Twój klucz API
-API_URL = "https://v1.basketball.api-sports.io"
+API_URL = "https://v3.football.api-sports.io"
 
 headers = {
     "x-apisports-key": API_KEY
