@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict
-from backend.typy_analityczne import generuj_typy_na_dzien
-from backend.firestore_utils import pobierz_typy_z_historii
+# Importuj bezpośrednio, ponieważ uvicorn jest uruchamiany z katalogu 'backend'
+from typy_analityczne import generuj_typy_na_jutro
 
 app = FastAPI()
 
@@ -29,14 +29,7 @@ def root():
 @app.get("/api/typy")
 def typy_na_jutro() -> List[Dict]:
     """
-    Endpoint zwracający wygenerowane lub zapisane typy meczów na jutro.
+    Endpoint zwracający wygenerowane typy meczów.
     """
-    return generuj_typy_na_dzien()
-
-@app.get("/api/historia")
-def historia_typow() -> Dict[str, List[Dict]]:
-    """
-    Endpoint zwracający wszystkie historyczne typy, pogrupowane po dacie.
-    """
-    return pobierz_typy_z_historii()
+    return generuj_typy_na_jutro()
 
