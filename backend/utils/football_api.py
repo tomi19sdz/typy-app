@@ -8,12 +8,12 @@ def pobierz_mecze_na_jutro() -> List[Dict]:
     
     api_key = os.environ.get("FOOTBALL_API_KEY")
     if not api_key:
-        print("Brak klucza API 'FOOTBALL_API_KEY'.")
+        print("Brak klucza API 'FOOTBALL_API_KEY' w zmiennych środowiskowych.")
         return []
-
-    url = "https://v3.football.api-sports.io/fixtures"
+        
+    url = "[https://v3.football.api-sports.io/fixtures](https://v3.football.api-sports.io/fixtures)"
     
-    # Oblicz datę jutra
+    # Oblicz datę jutra w formacie YYYY-MM-DD
     jutro = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
     
     querystring = {"date": jutro}
@@ -25,10 +25,9 @@ def pobierz_mecze_na_jutro() -> List[Dict]:
     
     try:
         response = requests.get(url, headers=headers, params=querystring)
-        response.raise_for_status()  # Rzuca błędem, jeśli status nie jest 2xx
+        response.raise_for_status()
         data = response.json()
         
-        # Sprawdzamy, czy klucz 'response' istnieje i czy zawiera dane
         if 'response' in data and len(data['response']) > 0:
             return data['response']
         else:
@@ -41,4 +40,3 @@ def pobierz_mecze_na_jutro() -> List[Dict]:
     except Exception as e:
         print(f"Nieoczekiwany błąd: {e}")
         return []
-
