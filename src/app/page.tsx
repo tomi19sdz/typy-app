@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 
 // Definicja typu dla danych meczu
 type Typ = {
-  id: number; // Dodano ID dla unikalnego klucza
   data: string;
   gospodarz: string;
   gosc: string;
@@ -18,64 +17,60 @@ export default function HomePage() {
   const [typy, setTypy] = useState<Typ[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [generatedAt, setGeneratedAt] = useState<string | null>(null); // Nowy stan na czas generowania
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
+  const fetchTypy = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL + '/api/typy';
+      const response = await fetch(apiUrl);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Błąd HTTP! Status: ${response.status}, Wiadomość: ${errorText}`);
+      }
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setTypy(data);
+      } else {
+        console.error("API zwróciło dane, które nie są tablicą:", data);
+        setError("Otrzymano nieprawidłowy format danych z serwera.");
+      }
+    } catch (err: any) {
+      console.error("Błąd podczas pobierania typów:", err);
+      setError(`Błąd ładowania typów: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchTypy = async () => {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL + '/api/typy';
-        console.log('Attempting to fetch from:', apiUrl);
-
-        const response = await fetch(apiUrl);
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
-        }
-
-        const data = await response.json(); // Oczekujemy teraz { tips: [...], generated_at_utc: "..." }
-
-        if (data && Array.isArray(data.tips)) {
-          // Filtrujemy typy z prawdopodobieństwem powyżej 60% dla strony głównej
-          const filteredTypy = data.tips.filter((typ: Typ) => typ.prawdopodobienstwo > 60);
-          setTypy(filteredTypy);
-          setGeneratedAt(data.generated_at_utc); // Ustaw czas generowania
-        } else {
-          console.error("API returned data in unexpected format:", data);
-          setError("Otrzymano nieprawidłowy format danych z serwera.");
-        }
-      } catch (err: unknown) {
-        console.error("Błąd podczas pobierania typów:", err);
-        if (err instanceof Error) {
-          setError(`Błąd ładowania typów: ${err.message}`);
-        } else {
-          setError("Wystąpił nieznany błąd podczas ładowania typów.");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchTypy();
   }, []);
 
-  const formatGeneratedTime = (isoString: string | null) => {
-    if (!isoString) return 'Brak danych';
+  const handleSaveToHistory = async () => {
+    if (typy.length === 0) {
+      setSaveMessage('Brak typów do zapisania.');
+      return;
+    }
+    setSaveMessage('Zapisywanie...');
     try {
-      const date = new Date(isoString);
-      // Formatowanie daty i czasu do czytelnego formatu lokalnego
-      return date.toLocaleString('pl-PL', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        timeZoneName: 'shortOffset' // np. "CEST"
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL + '/api/zapisz-typy-historie';
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(typy),
       });
-    } catch (e) {
-      console.error("Błąd formatowania daty:", e);
-      return isoString; // Zwróć surowy string, jeśli formatowanie się nie powiedzie
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Błąd HTTP! Status: ${response.status}, Wiadomość: ${errorText}`);
+      }
+
+      setSaveMessage('Typy zostały pomyślnie zapisane do historii!');
+    } catch (err: any) {
+      console.error("Błąd podczas zapisywania typów:", err);
+      setSaveMessage(`Błąd zapisywania: ${err.message}`);
     }
   };
 
@@ -91,13 +86,27 @@ export default function HomePage() {
     <div>
       <h1 className="text-3xl font-bold mb-6 text-center">Typy na Jutro</h1>
 
+      <div className="flex justify-center mb-6">
+        <button
+          onClick={handleSaveToHistory}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+        >
+          Zapisz typy do historii
+        </button>
+      </div>
+      {saveMessage && (
+        <p className={`text-center mt-4 ${saveMessage.startsWith('Błąd') ? 'text-red-500' : 'text-green-500'}`}>
+          {saveMessage}
+        </p>
+      )}
+
       {typy.length === 0 ? (
-        <p className="text-center text-lg mt-8">Brak typów na jutro (prawdopodobieństwo &gt; 60%).</p>
+        <p className="text-center text-lg mt-8">Brak typów na jutro.</p>
       ) : (
         <div className="space-y-4">
-          {typy.map((mecz) => (
+          {typy.map((mecz, index) => (
             <div
-              key={mecz.id}
+              key={index}
               className="bg-gray-800 p-4 rounded-md shadow-md border-l-4"
               style={{
                 borderColor:
@@ -116,16 +125,12 @@ export default function HomePage() {
                 <strong>Typ:</strong> {mecz.typ} | <strong>Kurs:</strong> {mecz.kurs} |{' '}
                 <strong>Szansa:</strong> {mecz.prawdopodobienstwo}%
               </p>
-              <p className="mt-2 text-sm text-gray-300 whitespace-pre-wrap">{mecz.analiza}</p>
+              <p className="mt-2 text-sm text-gray-300">{mecz.analiza}</p>
             </div>
           ))}
         </div>
       )}
-      
-      {/* Informacja o czasie generowania na samym dole strony */}
-      <div className="mt-8 text-center text-gray-500 text-sm">
-        <p>Typy wygenerowano: {formatGeneratedTime(generatedAt)}</p>
-      </div>
     </div>
   );
 }
+

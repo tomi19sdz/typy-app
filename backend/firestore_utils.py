@@ -1,75 +1,68 @@
+import os
 import firebase_admin
 from firebase_admin import credentials, firestore
-import json
+from google.cloud.firestore_v1.base_query import FieldFilter
 from typing import List, Dict
 
-# Inicjalizacja Firebase z globalnymi zmiennymi
-# Te zmienne są dostarczane przez środowisko Canvas
-# Upewnij się, że nie zmieniasz ich nazw.
-firebase_config = json.loads(__firebase_config) if '__firebase_config' in globals() else {}
-initial_auth_token = __initial_auth_token if '__initial_auth_token' in globals() else None
-app_id = __app_id if '__app_id' in globals() else 'default-app-id'
+# Inicjalizacja Firebase z użyciem zmiennej środowiskowej
+try:
+    cred_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+    if cred_path:
+        cred = credentials.Certificate(cred_path)
+        firebase_admin.initialize_app(cred)
+        db = firestore.client()
+        print("Firestore został pomyślnie zainicjowany.")
+    else:
+        print("Brak zmiennej środowiskowej GOOGLE_APPLICATION_CREDENTIALS. Firebase nie zostanie zainicjowany.")
+        db = None
+except Exception as e:
+    print(f"Błąd podczas inicjalizacji Firebase: {e}")
+    db = None
 
-# Inicjalizacja Firebase Admin SDK
-if not firebase_admin._apps:
-    cred = credentials.Certificate(firebase_config)
-    firebase_admin.initialize_app(cred)
-
-db = firestore.client()
-
-def zapisz_typy_na_dzien(data_string: str, typy: List[Dict]):
-    """
-    Zapisuje listę typów do Firestore dla danego dnia.
-    Każdy dzień to oddzielny dokument.
-    """
-    # Ścieżka do kolekcji publicznych danych
-    collection_path = f"artifacts/{app_id}/public/data/typy_historii"
-    doc_ref = db.collection(collection_path).document(data_string)
+def zapisz_typy_na_dzien(data: str, typy: List[Dict]):
+    """Zapisuje listę typów na dany dzień do bazy danych."""
+    if not db:
+        print("Firestore nie jest zainicjowany, nie można zapisać danych.")
+        return
     
     try:
-        # Serializujemy listę typów do ciągu JSON, aby uniknąć problemów z Firestore
-        typy_json = json.dumps(typy)
-        doc_ref.set({"typy": typy_json})
-        print(f"Pomyślnie zapisano typy na dzień: {data_string}")
+        doc_ref = db.collection('historia_typow').document(data)
+        doc_ref.set({'typy': typy, 'timestamp': firestore.SERVER_TIMESTAMP})
+        print(f"Typy na dzień {data} zostały pomyślnie zapisane w Firestore.")
     except Exception as e:
-        print(f"Błąd podczas zapisu do Firestore: {e}")
+        print(f"Błąd podczas zapisywania typów do Firestore: {e}")
 
-def pobierz_typy_z_historii() -> Dict[str, List[Dict]]:
-    """
-    Pobiera wszystkie historyczne typy z Firestore i zwraca je posortowane
-    według daty.
-    """
-    collection_path = f"artifacts/{app_id}/public/data/typy_historii"
-    
-    try:
-        docs = db.collection(collection_path).stream()
-        historia_typow = {}
-        for doc in docs:
-            # Deserializujemy ciąg JSON z powrotem do listy
-            data = doc.to_dict()
-            if 'typy' in data:
-                typy_list = json.loads(data['typy'])
-                historia_typow[doc.id] = typy_list
-        
-        return historia_typow
-    except Exception as e:
-        print(f"Błąd podczas pobierania z Firestore: {e}")
-        return {}
-
-def pobierz_typy_na_dzien(data_string: str) -> List[Dict] | None:
-    """
-    Pobiera typy z Firestore dla danego dnia.
-    """
-    collection_path = f"artifacts/{app_id}/public/data/typy_historii"
-    doc_ref = db.collection(collection_path).document(data_string)
+def pobierz_typy_na_dzien(data: str) -> List[Dict]:
+    """Pobiera typy na dany dzień z bazy danych."""
+    if not db:
+        print("Firestore nie jest zainicjowany, nie można pobrać danych.")
+        return []
 
     try:
+        doc_ref = db.collection('historia_typow').document(data)
         doc = doc_ref.get()
         if doc.exists:
-            data = doc.to_dict()
-            if 'typy' in data:
-                return json.loads(data['typy'])
-        return None
+            return doc.to_dict().get('typy', [])
+        else:
+            return []
     except Exception as e:
-        print(f"Błąd podczas pobierania typów na dzień {data_string} z Firestore: {e}")
-        return None
+        print(f"Błąd podczas pobierania typów z Firestore: {e}")
+        return []
+
+def pobierz_typy_z_historii() -> Dict[str, List[Dict]]:
+    """Pobiera wszystkie typy z historii, grupując je po dacie."""
+    if not db:
+        print("Firestore nie jest zainicjowany, nie można pobrać danych.")
+        return {}
+    
+    historia = {}
+    try:
+        docs = db.collection('historia_typow').stream()
+        for doc in docs:
+            historia[doc.id] = doc.to_dict().get('typy', [])
+    except Exception as e:
+        print(f"Błąd podczas pobierania historii z Firestore: {e}")
+        return {}
+        
+    return historia
+
