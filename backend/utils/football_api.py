@@ -1,42 +1,25 @@
 import requests
-import os
 from datetime import datetime, timedelta
-from typing import List, Dict
 
-def pobierz_mecze_na_jutro() -> List[Dict]:
-    """Pobiera listę meczów na jutrzejszy dzień z API Football."""
-    
-    api_key = os.environ.get("FOOTBALL_API_KEY")
-    if not api_key:
-        print("Brak klucza API 'FOOTBALL_API_KEY' w zmiennych środowiskowych.")
-        return []
-        
-    url = "[https://v3.football.api-sports.io/fixtures](https://v3.football.api-sports.io/fixtures)"
-    
-    # Oblicz datę jutra w formacie YYYY-MM-DD
-    jutro = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
-    
-    querystring = {"date": jutro}
-    
-    headers = {
-        "x-rapidapi-host": "v3.football.api-sports.io",
-        "x-rapidapi-key": api_key
-    }
-    
-    try:
-        response = requests.get(url, headers=headers, params=querystring)
-        response.raise_for_status()
-        data = response.json()
-        
-        if 'response' in data and len(data['response']) > 0:
-            return data['response']
-        else:
-            print(f"API nie zwróciło żadnych meczów na dzień {jutro}.")
-            return []
-            
-    except requests.exceptions.RequestException as e:
-        print(f"Błąd podczas pobierania danych z API: {e}")
-        return []
-    except Exception as e:
-        print(f"Nieoczekiwany błąd: {e}")
-        return []
+API_KEY = "8dfc23b74ee7404e7ee7ab29d91532c2"
+BASE_URL = "https://v3.football.api-sports.io"
+
+headers = {"x-apisports-key": API_KEY}
+
+def get_typy():
+    jutro = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+    matches = requests.get(f"{BASE_URL}/fixtures?date={jutro}", headers=headers).json()
+
+    typy = []
+    for m in matches.get("response", []):
+        # przykładowa logika — tu potem wstawisz analizę rankingu, składów, formy itd.
+        prawdopodobienstwo = 65  # mock do testów
+        if prawdopodobienstwo >= 60:
+            typy.append({
+                "mecz": f"{m['teams']['home']['name']} vs {m['teams']['away']['name']}",
+                "typ": "1",  # np. zwycięstwo gospodarzy
+                "kurs": 1.85,
+                "prawdopodobienstwo": prawdopodobienstwo,
+                "analiza": "Przykładowa analiza formy i składu."
+            })
+    return typy

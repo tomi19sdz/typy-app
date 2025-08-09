@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tymczasowe testowe style */
-h1 {
-  @apply text-3xl text-blue-500 font-bold;
+body {
+  @apply bg-gray-900 text-gray-200;
 }
