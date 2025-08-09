@@ -1,4 +1,5 @@
 // src/app/historia/page.tsx
+'use client';
 import React, { useEffect, useState } from "react";
 
 // Tworzymy poprawny typ zamiast `any`
