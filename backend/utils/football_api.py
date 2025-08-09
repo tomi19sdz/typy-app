@@ -2,7 +2,7 @@ import requests
 from datetime import datetime, timedelta
 
 API_KEY = "8dfc23b74ee7404e7ee7ab29d91532c2"
-BASE_URL = "https://v3.football.api-sports.io"
+BASE_URL = "https://v3.football.api-sports.io/teams"
 
 headers = {"x-apisports-key": API_KEY}
 
