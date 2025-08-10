@@ -1,13 +1,13 @@
-// src/app/api/fetch-data/route.ts
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 
 export async function GET() {
-  // Pobieramy klucz API ze zmiennych środowiskowych Vercela,
-  // używając składni Next.js, aby zapewnić kompatybilność.
   const apiKey = process.env.FOOTBALL_API_KEY; 
   
+  // Zapisz wartość apiKey w logach, aby sprawdzić, co widzi serwer.
+  console.log('Wartość klucza API w serwerze:', apiKey);
+
   if (!apiKey) {
     return NextResponse.json({ error: 'API key not found' }, { status: 500 });
   }
@@ -23,7 +23,6 @@ export async function GET() {
     });
 
     if (!res.ok) {
-      // Jeśli odpowiedź nie jest OK, zwracamy błąd z odpowiednim statusem.
       const errorData = await res.json();
       return NextResponse.json({ error: 'Failed to fetch data from API', apiError: errorData }, { status: res.status });
     }
