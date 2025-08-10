@@ -1,7 +1,9 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  env: {
+    FOOTBALL_API_KEY: process.env.FOOTBALL_API_KEY,
+  },
 };
 
 export default nextConfig;
