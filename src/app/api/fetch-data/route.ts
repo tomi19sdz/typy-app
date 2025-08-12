@@ -42,8 +42,8 @@ export async function GET() {
       }
     });
 
-  } catch (error) {
-    console.error('Wewnętrzny błąd serwera:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch (error: any) { // Zaktualizowałem typ błędu na `any`
+    console.error('Wewnętrzny błąd serwera:', error.message);
+    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
   }
 }
