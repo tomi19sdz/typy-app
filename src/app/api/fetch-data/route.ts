@@ -41,10 +41,14 @@ export async function GET() {
       }
     });
 
-  } catch (error: any) {
-    // Poprawka: Ten komentarz wyłącza błąd ESLint dla tej linii
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    console.error('Wewnętrzny błąd serwera:', error.message);
-    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+  } catch (error: unknown) { // Zmieniono z `any` na `unknown`
+    // Sprawdzamy, czy błąd jest instancją Error, aby uzyskać dostęp do message
+    if (error instanceof Error) {
+        console.error('Wewnętrzny błąd serwera:', error.message);
+        return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+    } else {
+        console.error('Wewnętrzny błąd serwera:', 'Nieznany błąd');
+        return NextResponse.json({ error: 'Internal server error', details: 'Unknown error' }, { status: 500 });
+    }
   }
 }
