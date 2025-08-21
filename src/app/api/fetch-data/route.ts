@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   const apiKey = process.env.FOOTBALL_API_KEY; 
   
+  // To powinno pojawić się w logach Vercela
   console.log('Wartość klucza API w serwerze:', apiKey);
 
   if (!apiKey) {
@@ -13,7 +14,6 @@ export async function GET() {
   try {
     const res = await fetch('https://v3.football.api-sports.io/fixtures?date=2024-05-15', {
       headers: {
-        // Poprawne użycie klucza API z zmiennej środowiskowej
         'x-rapidapi-key': apiKey,
         'x-rapidapi-host': 'v3.football.api-sports.io'
       },
@@ -33,16 +33,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Unexpected data format from API' }, { status: 500 });
     }
 
-    // Zwracamy dane z nagłówkiem Cache-Control.
-    // To poinstruuje Vercel, aby przechowywał odpowiedź w pamięci podręcznej przez 3600 sekund (1 godzina).
-    // W ten sposób, następne wywołania tego endpointu przez 1 godzinę nie będą obciążać API-Sports.
+    // Ostateczna poprawka: zwracamy dane bezpośrednio,
+    // a Vercel zajmie się cachowaniem za nas dzięki nagłówkom.
     return NextResponse.json(data.response, {
       headers: {
         'Cache-Control': 's-maxage=3600, stale-while-revalidate'
       }
     });
 
-  } catch (error: any) { // Zaktualizowałem typ błędu na `any`
+  } catch (error: any) {
     console.error('Wewnętrzny błąd serwera:', error.message);
     return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
   }
