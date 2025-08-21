@@ -27,6 +27,24 @@ export async function GET() {
     }
 
     const data = await res.json();
+    
+    if (!data || !data.response) {
+      console.error('API zwróciło nieoczekiwane dane:', data);
+      return NextResponse.json({ error: 'Unexpected data format from API' }, { status: 500 });
+    }
 
+    // Ostateczna poprawka: zwracamy dane bezpośrednio,
+    // a Vercel zajmie się cachowaniem za nas dzięki nagłówkom.
+    return NextResponse.json(data.response, {
+      headers: {
+        'Cache-Control': 's-maxage=3600, stale-while-revalidate'
+      }
+    });
+
+  } catch (error: any) {
+    // Poprawka: Ten komentarz wyłącza błąd ESLint dla tej linii
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    console.error('Wewnętrzny błąd serwera:', error.message);
+    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
   }
 }
