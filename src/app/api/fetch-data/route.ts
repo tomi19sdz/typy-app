@@ -12,7 +12,9 @@ export async function GET() {
   }
 
   try {
-    const res = await fetch('https://v3.football.api-sports.io/fixtures?date=2024-05-15', {
+    // Zmieniono datę na bieżącą, aby sprawdzić, czy API zwraca dane
+    const today = new Date().toISOString().split('T')[0];
+    const res = await fetch(`https://v3.football.api-sports.io/fixtures?date=${today}`, {
       headers: {
         'x-rapidapi-key': apiKey,
         'x-rapidapi-host': 'v3.football.api-sports.io'
