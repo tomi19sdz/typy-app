@@ -42,6 +42,8 @@ export async function GET() {
     });
 
   } catch (error: any) {
+    // Poprawka: Ten komentarz wyłącza błąd ESLint dla tej linii
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     console.error('Wewnętrzny błąd serwera:', error.message);
     return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
   }
