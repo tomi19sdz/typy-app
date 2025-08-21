@@ -16,27 +16,23 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Zmieniamy adres URL z zewnętrznego backendu na lokalny plik.
-    // Ten plik będzie aktualizowany przez Cron Job na Vercelu.
-    fetch('/cached-data.json')
+    // Teraz pobieramy dane bezpośrednio z naszego endpointu,
+    // który jest cachowany przez Vercel.
+    fetch('/api/fetch-data')
       .then(res => {
-        // Sprawdzamy, czy plik istnieje. Jeśli nie, to oznacza błąd 404
-        // i po prostu ustawiamy brak danych.
         if (!res.ok) {
-          throw new Error('Brak zaktualizowanych danych. Plik nie znaleziono.');
+          throw new Error('Failed to fetch data from API route.');
         }
         return res.json();
       })
       .then(data => {
-        // Dane z cachowanego pliku są już w odpowiednim formacie, więc
-        // możemy je od razu ustawić.
-        setTypy(data.response); // Dane z api-sports są w polu 'response'
+        setTypy(data); 
         setLoading(false);
       })
       .catch((error) => {
         console.error("Błąd podczas pobierania danych:", error);
         setLoading(false);
-        setTypy([]); // Ustawiamy pustą tablicę w przypadku błędu
+        setTypy([]);
       });
   }, []);
 
