@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   // Nowy klucz API
   const newApiKey = "1";
-  const newApiUrl = `https://www.thesportsdb.com/api/v1/json/${newApiKey}/searchteams.php?t=Arsenal`; // Przykładowy endpoint
+  const newApiUrl = `https://www.thesportsdb.com/api/v1/json/${newApiKey}/eventsnextleague.php?id=4328`; // Poprawiony endpoint
 
   try {
     // Zmieniono datę na konkretną, aby sprawdzić, czy API zwraca dane
@@ -14,19 +14,20 @@ export async function GET() {
 
     if (!res.ok) {
       console.error('Błąd z API. Status:', res.status, 'StatusText:', res.statusText);
-      const errorData = await res.json().catch(() => null);
+      const errorData = await res.json().catch(()co => null);
       return NextResponse.json({ error: 'Failed to fetch data from API', apiError: errorData }, { status: res.status });
     }
 
     const data = await res.json();
     
-    if (!data || !data.teams) {
+    // Sprawdzamy, czy dane istnieją w kluczu `events`
+    if (!data || !data.events) {
       console.error('API zwróciło nieoczekiwane dane:', data);
       return NextResponse.json({ error: 'Unexpected data format from API' }, { status: 500 });
     }
 
     // Zwracamy dane bezpośrednio.
-    return NextResponse.json(data.teams, {
+    return NextResponse.json(data.events, {
       headers: {
         'Cache-Control': 's-maxage=3600, stale-while-revalidate'
       }
