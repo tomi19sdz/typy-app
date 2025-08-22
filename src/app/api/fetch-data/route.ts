@@ -2,39 +2,56 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  // Nowy klucz API
   const newApiKey = "1";
-  const newApiUrl = `https://www.thesportsdb.com/api/v1/json/${newApiKey}/eventsnextleague.php?id=4328`; // Poprawiony endpoint
+  const leagueIds = [
+    // Angielska Premier League
+    '4328', 
+    // Polska Ekstraklasa
+    '4332', 
+    // Hiszpańska La Liga
+    '4335',
+    // Niemiecka Bundesliga
+    '4331',
+    // Włoska Serie A
+    '4337'
+  ];
 
   try {
-    // Zmieniono datę na konkretną, aby sprawdzić, czy API zwraca dane
-    const res = await fetch(newApiUrl, {
-      cache: 'no-store'
+    const fetchPromises = leagueIds.map(async (id) => {
+      const newApiUrl = `https://www.thesportsdb.com/api/v1/json/${newApiKey}/eventsnextleague.php?id=${id}`;
+      console.log(`Pobieram dane dla ligi o ID: ${id}`);
+      const res = await fetch(newApiUrl, {
+        cache: 'no-store'
+      });
+
+      if (!res.ok) {
+        console.error(`Błąd z API dla ligi ${id}. Status:`, res.status, 'StatusText:', res.statusText);
+        return { events: [] }; // Zwracamy pustą tablicę, aby nie zatrzymać wszystkich zapytań
+      }
+      
+      const data = await res.json();
+      console.log(`Pobrano dane dla ligi o ID: ${id}`);
+      return data;
     });
 
-    if (!res.ok) {
-      console.error('Błąd z API. Status:', res.status, 'StatusText:', res.statusText);
-      const errorData = await res.json().catch(()co => null);
-      return NextResponse.json({ error: 'Failed to fetch data from API', apiError: errorData }, { status: res.status });
+    // Czekamy, aż wszystkie zapytania zostaną zakończone
+    const results = await Promise.all(fetchPromises);
+
+    const allEvents = results.flatMap(result => result.events || []);
+
+    if (allEvents.length === 0) {
+      console.error('Brak danych dla wszystkich lig.');
+      return NextResponse.json({ error: 'Brak dostępnych meczów dla wszystkich wybranych lig.' }, { status: 500 });
     }
 
-    const data = await res.json();
-    
-    // Sprawdzamy, czy dane istnieją w kluczu `events`
-    if (!data || !data.events) {
-      console.error('API zwróciło nieoczekiwane dane:', data);
-      return NextResponse.json({ error: 'Unexpected data format from API' }, { status: 500 });
-    }
-
-    // Zwracamy dane bezpośrednio.
-    return NextResponse.json(data.events, {
+    // Zwracamy wszystkie dane.
+    return NextResponse.json(allEvents, {
       headers: {
         'Cache-Control': 's-maxage=3600, stale-while-revalidate'
       }
     });
 
-  } catch (error: unknown) { // Zmieniono z `any` na `unknown`
-    // Sprawdzamy, czy błąd jest instancją Error, aby uzyskać dostęp do message
+  } catch (error: unknown) {
     if (error instanceof Error) {
         console.error('Wewnętrzny błąd serwera:', error.message);
         return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
