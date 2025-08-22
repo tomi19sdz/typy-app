@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 interface FootballEvent {
   idLeague: string;
-  [key: string]: any; // Pozwala na dodatkowe właściwości
+  [key: string]: unknown; // zamiast any
 }
 
 export async function GET() {
