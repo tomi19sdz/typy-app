@@ -1,6 +1,11 @@
 // src/app/api/fetch-data/route.ts
 import { NextResponse } from 'next/server';
 
+interface FootballEvent {
+  idLeague: string;
+  [key: string]: any; // Pozwala na dodatkowe właściwości
+}
+
 export async function GET() {
   const newApiKey = "1";
   const today = new Date().toISOString().split('T')[0];
@@ -33,13 +38,13 @@ export async function GET() {
     
     const data = await res.json();
 
-    if (!data || !data.events) {
+    if (!data || !Array.isArray(data.events) || data.events.length === 0) {
       console.error('API zwróciło nieoczekiwane dane:', data);
       return NextResponse.json({ error: 'Brak dostępnych meczów dla wszystkich wybranych lig.' }, { status: 500 });
     }
 
     // Filtrujemy mecze według ID lig
-    const filteredEvents = data.events.filter((event: any) => leagueIds.includes(event.idLeague));
+    const filteredEvents = data.events.filter((event: FootballEvent) => leagueIds.includes(event.idLeague));
 
     if (filteredEvents.length === 0) {
       console.error('Brak danych dla wszystkich lig po filtrowaniu.');
