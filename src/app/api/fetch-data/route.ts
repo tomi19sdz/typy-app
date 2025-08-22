@@ -2,23 +2,13 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const apiKey = process.env.FOOTBALL_API_KEY; 
-  
-  // To powinno pojawić się w logach Vercela
-  console.log('Wartość klucza API w serwerze:', apiKey);
-
-  if (!apiKey) {
-    return NextResponse.json({ error: 'API key not found' }, { status: 500 });
-  }
+  // Nowy klucz API
+  const newApiKey = "1";
+  const newApiUrl = `https://www.thesportsdb.com/api/v1/json/${newApiKey}/searchteams.php?t=Arsenal`; // Przykładowy endpoint
 
   try {
-    // Zmieniono datę na bieżącą, aby sprawdzić, czy API zwraca dane
-    const today = new Date().toISOString().split('T')[0];
-    const res = await fetch(`https://v3.football.api-sports.io/fixtures?date=${today}`, {
-      headers: {
-        'x-rapidapi-key': apiKey,
-        'x-rapidapi-host': 'v3.football.api-sports.io'
-      },
+    // Zmieniono datę na konkretną, aby sprawdzić, czy API zwraca dane
+    const res = await fetch(newApiUrl, {
       cache: 'no-store'
     });
 
@@ -30,14 +20,13 @@ export async function GET() {
 
     const data = await res.json();
     
-    if (!data || !data.response) {
+    if (!data || !data.teams) {
       console.error('API zwróciło nieoczekiwane dane:', data);
       return NextResponse.json({ error: 'Unexpected data format from API' }, { status: 500 });
     }
 
-    // Ostateczna poprawka: zwracamy dane bezpośrednio,
-    // a Vercel zajmie się cachowaniem za nas dzięki nagłówkom.
-    return NextResponse.json(data.response, {
+    // Zwracamy dane bezpośrednio.
+    return NextResponse.json(data.teams, {
       headers: {
         'Cache-Control': 's-maxage=3600, stale-while-revalidate'
       }
