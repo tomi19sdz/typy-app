@@ -13,7 +13,9 @@ export async function GET() {
     // Niemiecka Bundesliga
     '4331',
     // Włoska Serie A
-    '4337'
+    '4337',
+    // Francuska Ligue 1
+    '4334'
   ];
 
   try {
