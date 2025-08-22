@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   const newApiKey = "1";
+  const today = new Date().toISOString().split('T')[0];
+  const newApiUrl = `https://www.thesportsdb.com/api/v1/json/${newApiKey}/eventsday.php?d=${today}&s=Soccer`;
+
   const leagueIds = [
     // Angielska Premier League
     '4328', 
@@ -19,35 +22,32 @@ export async function GET() {
   ];
 
   try {
-    const fetchPromises = leagueIds.map(async (id) => {
-      const newApiUrl = `https://www.thesportsdb.com/api/v1/json/${newApiKey}/eventsnextleague.php?id=${id}`;
-      console.log(`Pobieram dane dla ligi o ID: ${id}`);
-      const res = await fetch(newApiUrl, {
-        cache: 'no-store'
-      });
-
-      if (!res.ok) {
-        console.error(`Błąd z API dla ligi ${id}. Status:`, res.status, 'StatusText:', res.statusText);
-        return { events: [] }; // Zwracamy pustą tablicę, aby nie zatrzymać wszystkich zapytań
-      }
-      
-      const data = await res.json();
-      console.log(`Pobrano dane dla ligi o ID: ${id}`);
-      return data;
+    const res = await fetch(newApiUrl, {
+      cache: 'no-store'
     });
 
-    // Czekamy, aż wszystkie zapytania zostaną zakończone
-    const results = await Promise.all(fetchPromises);
+    if (!res.ok) {
+      console.error(`Błąd z API. Status:`, res.status, 'StatusText:', res.statusText);
+      return NextResponse.json({ error: 'Failed to fetch data from API', apiError: null }, { status: res.status });
+    }
+    
+    const data = await res.json();
 
-    const allEvents = results.flatMap(result => result.events || []);
+    if (!data || !data.events) {
+      console.error('API zwróciło nieoczekiwane dane:', data);
+      return NextResponse.json({ error: 'Brak dostępnych meczów dla wszystkich wybranych lig.' }, { status: 500 });
+    }
 
-    if (allEvents.length === 0) {
-      console.error('Brak danych dla wszystkich lig.');
+    // Filtrujemy mecze według ID lig
+    const filteredEvents = data.events.filter((event: any) => leagueIds.includes(event.idLeague));
+
+    if (filteredEvents.length === 0) {
+      console.error('Brak danych dla wszystkich lig po filtrowaniu.');
       return NextResponse.json({ error: 'Brak dostępnych meczów dla wszystkich wybranych lig.' }, { status: 500 });
     }
 
     // Zwracamy wszystkie dane.
-    return NextResponse.json(allEvents, {
+    return NextResponse.json(filteredEvents, {
       headers: {
         'Cache-Control': 's-maxage=3600, stale-while-revalidate'
       }
