@@ -2,70 +2,69 @@
 import { NextResponse } from 'next/server';
 
 interface FootballEvent {
-  idEvent: string;
   idLeague: string;
-  strEvent: string;
-  dateEvent: string;
-  [key: string]: unknown; // pozwala na dodatkowe pola bez użycia "any"
+  [key: string]: any; // Allows for additional properties
 }
 
 export async function GET() {
-  const apiKey = "1"; // darmowy klucz TheSportsDB
+  const newApiKey = "1";
+  const today = new Date().toISOString().split('T')[0];
+  const newApiUrl = `https://www.thesportsdb.com/api/v1/json/${newApiKey}/eventsday.php?d=${today}&s=Soccer`;
+
   const leagueIds = [
-    '4328', // Premier League
-    '4332', // Ekstraklasa
-    '4335', // La Liga
-    '4331', // Bundesliga
-    '4337', // Serie A
-    '4334'  // Ligue 1
+    // English Premier League
+    '4328', 
+    // Polish Ekstraklasa
+    '4332', 
+    // Spanish La Liga
+    '4335',
+    // German Bundesliga
+    '4331',
+    // Italian Serie A
+    '4337',
+    // French Ligue 1
+    '4334'
   ];
 
   try {
-    const allEvents: FootballEvent[] = [];
+    const res = await fetch(newApiUrl, {
+      cache: 'no-store'
+    });
 
-    // pobieramy wydarzenia dla każdej ligi osobno
-    for (const id of leagueIds) {
-      const url = `https://www.thesportsdb.com/api/v1/json/${apiKey}/eventsnextleague.php?id=${id}`;
-      const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) {
+      console.error(`API Error. Status:`, res.status, 'StatusText:', res.statusText);
+      return NextResponse.json({ error: 'Failed to fetch data from API', apiError: null }, { status: res.status });
+    }
+    
+    const data = await res.json();
 
-      if (!res.ok) {
-        console.error(`Błąd API dla ligi ${id}:`, res.status, res.statusText);
-        continue;
-      }
-
-      const data = await res.json();
-
-      if (data && Array.isArray(data.events)) {
-        allEvents.push(...data.events);
-      }
+    if (!data || !Array.isArray(data.events) || data.events.length === 0) {
+      console.error('API returned unexpected data:', data);
+      return NextResponse.json({ error: 'No available matches for selected leagues.' }, { status: 500 });
     }
 
-    if (allEvents.length === 0) {
-      return NextResponse.json(
-        { error: 'Brak dostępnych meczów w wybranych ligach.', events: [] },
-        { status: 200 }
-      );
+    // Filter matches by League ID
+    const filteredEvents = data.events.filter((event: FootballEvent) => leagueIds.includes(event.idLeague));
+
+    if (filteredEvents.length === 0) {
+      console.error('No data for all leagues after filtering.');
+      return NextResponse.json({ error: 'No available matches for selected leagues.' }, { status: 500 });
     }
 
-    return NextResponse.json(allEvents, {
+    // Return all data
+    return NextResponse.json(filteredEvents, {
       headers: {
-        'Cache-Control': 's-maxage=3600, stale-while-revalidate',
-      },
+        'Cache-Control': 's-maxage=3600, stale-while-revalidate'
+      }
     });
 
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('Wewnętrzny błąd serwera:', error.message);
-      return NextResponse.json(
-        { error: 'Internal server error', details: error.message },
-        { status: 500 }
-      );
+        console.error('Internal server error:', error.message);
+        return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
     } else {
-      console.error('Wewnętrzny błąd serwera: Nieznany błąd');
-      return NextResponse.json(
-        { error: 'Internal server error', details: 'Unknown error' },
-        { status: 500 }
-      );
+        console.error('Internal server error:', 'Unknown error');
+        return NextResponse.json({ error: 'Internal server error', details: 'Unknown error' }, { status: 500 });
     }
   }
 }
