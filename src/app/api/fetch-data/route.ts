@@ -36,30 +36,3 @@ export async function GET() {
     if (!data || !data.events) {
       console.error('API zwróciło nieoczekiwane dane:', data);
       return NextResponse.json({ error: 'Brak dostępnych meczów dla wszystkich wybranych lig.' }, { status: 500 });
-    }
-
-    // Filtrujemy mecze według ID lig
-    const filteredEvents = data.events.filter((event: any) => leagueIds.includes(event.idLeague));
-
-    if (filteredEvents.length === 0) {
-      console.error('Brak danych dla wszystkich lig po filtrowaniu.');
-      return NextResponse.json({ error: 'Brak dostępnych meczów dla wszystkich wybranych lig.' }, { status: 500 });
-    }
-
-    // Zwracamy wszystkie dane.
-    return NextResponse.json(filteredEvents, {
-      headers: {
-        'Cache-Control': 's-maxage=3600, stale-while-revalidate'
-      }
-    });
-
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-        console.error('Wewnętrzny błąd serwera:', error.message);
-        return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
-    } else {
-        console.error('Wewnętrzny błąd serwera:', 'Nieznany błąd');
-        return NextResponse.json({ error: 'Internal server error', details: 'Unknown error' }, { status: 500 });
-    }
-  }
-}
