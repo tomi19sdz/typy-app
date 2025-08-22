@@ -53,9 +53,13 @@ export async function GET() {
       }
     });
 
-  } catch (error: any) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    console.error('Wewnętrzny błąd serwera:', error.message);
-    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+        console.error('Wewnętrzny błąd serwera:', error.message);
+        return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+    } else {
+        console.error('Wewnętrzny błąd serwera:', 'Nieznany błąd');
+        return NextResponse.json({ error: 'Internal server error', details: 'Unknown error' }, { status: 500 });
+    }
   }
 }
