@@ -9,6 +9,7 @@ type Typ = {
   strHomeTeam: string;
   strAwayTeam: string;
   dateEvent: string;
+  idLeague: string; // Dodano brakującą właściwość
 };
 
 export default function AnalizaPage() {
