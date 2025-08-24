@@ -7,7 +7,7 @@ interface FootballEvent {
 }
 
 export async function GET() {
-  const newApiKey = "1";
+  const newApiKey = "123";
   const today = new Date().toISOString().split('T')[0];
   const newApiUrl = `https://www.thesportsdb.com/api/v1/json/${newApiKey}/eventsday.php?d=${today}&s=Soccer`;
 
