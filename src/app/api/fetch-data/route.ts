@@ -3,11 +3,11 @@ import { NextResponse } from 'next/server';
 
 interface FootballEvent {
   idLeague: string;
-  [key: string]: unknown; // Allows for additional properties
+  [key: string]: any; // Allows for additional properties
 }
 
 export async function GET() {
-  const newApiKey = "123";
+  const newApiKey = "1";
   const today = new Date().toISOString().split('T')[0];
   const newApiUrl = `https://www.thesportsdb.com/api/v1/json/${newApiKey}/eventsday.php?d=${today}&s=Soccer`;
 
@@ -39,8 +39,9 @@ export async function GET() {
     const data = await res.json();
 
     if (!data || !Array.isArray(data.events) || data.events.length === 0) {
-      console.error('API returned unexpected data:', data);
-      return NextResponse.json({ error: 'No available matches for selected leagues.' }, { status: 500 });
+      console.error('API returned unexpected data or no events.');
+      // Zwróć pustą tablicę zamiast błędu, aby strona wyświetliła "Brak typów do wyświetlenia".
+      return NextResponse.json([], { status: 200 });
     }
 
     // Filter matches by League ID
@@ -48,7 +49,8 @@ export async function GET() {
 
     if (filteredEvents.length === 0) {
       console.error('No data for all leagues after filtering.');
-      return NextResponse.json({ error: 'No available matches for selected leagues.' }, { status: 500 });
+      // Zwróć pustą tablicę, gdy nie ma meczów dla wybranych lig.
+      return NextResponse.json([], { status: 200 });
     }
 
     // Return all data
