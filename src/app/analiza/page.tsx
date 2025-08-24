@@ -3,14 +3,12 @@
 import { useEffect, useState } from 'react';
 
 type Typ = {
-  id: number; // Dodano ID dla unikalnego klucza
-  data: string;
-  gospodarz: string;
-  gosc: string;
-  typ: string;
-  kurs: number;
-  prawdopodobienstwo: number;
-  analiza: string; // Teraz to będzie długa analiza
+  id: number;
+  strEvent: string;
+  strLeague: string;
+  strHomeTeam: string;
+  strAwayTeam: string;
+  dateEvent: string;
 };
 
 export default function AnalizaPage() {
@@ -21,7 +19,8 @@ export default function AnalizaPage() {
   useEffect(() => {
     const fetchTypy = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL + '/api/typy';
+        // Zmieniono apiUrl na /api/fetch-data
+        const apiUrl = '/api/fetch-data';
         console.log('Attempting to fetch from:', apiUrl);
 
         const response = await fetch(apiUrl);
@@ -34,11 +33,8 @@ export default function AnalizaPage() {
         const data = await response.json();
 
         if (Array.isArray(data)) {
-          // Filtrujemy typy z prawdopodobieństwem powyżej 60%
-          const filteredTypy = data.filter(typ => typ.prawdopodobienstwo > 60);
-          // Sortujemy od najwyższego prawdopodobieństwa
-          filteredTypy.sort((a, b) => b.prawdopodobienstwo - a.prawdopodobienstwo);
-          setTypy(filteredTypy);
+          // Brak logiki filtrowania typów. Pokażemy wszystkie.
+          setTypy(data);
         } else {
           console.error("API returned data that is not an array:", data);
           setError("Otrzymano nieprawidłowy format danych z serwera.");
@@ -65,38 +61,26 @@ export default function AnalizaPage() {
   if (error) {
     return <p className="text-center text-red-500 text-lg mt-8">Błąd: {error}</p>;
   }
-
+  
+  // Zaktualizowano rendering, aby pokazać dane z TheSportsDB
   return (
     <section>
       <h1 className="text-3xl font-bold mb-6 text-center">Szczegółowe Analizy Typów</h1>
       {typy.length === 0 ? (
-        <p className="text-center text-lg mt-8">Brak typów spełniających kryteria analizy (prawdopodobieństwo &gt; 60%).</p>
+        <p className="text-center text-lg mt-8">Brak typów do wyświetlenia.</p>
       ) : (
         <div className="space-y-8">
           {typy.map((mecz) => (
             <div
-              key={mecz.id} // Używamy ID meczu jako klucza
-              className="bg-gray-800 p-6 rounded-lg shadow-xl border-l-4"
-              style={{
-                borderColor:
-                  mecz.prawdopodobienstwo >= 70
-                    ? 'green'
-                    : mecz.prawdopodobienstwo >= 60
-                    ? 'orange'
-                    : 'red'
-              }}
+              key={mecz.idLeague}
+              className="bg-gray-800 p-6 rounded-lg shadow-xl border-l-4 border-green-500"
             >
               <h2 className="text-2xl font-semibold text-blue-400 mb-2">
-                {mecz.gospodarz} vs {mecz.gosc} ({mecz.data})
+                {mecz.strHomeTeam} vs {mecz.strAwayTeam} ({mecz.dateEvent})
               </h2>
               <p className="text-lg mb-4">
-                <strong>Typ:</strong> <span className="text-yellow-300">{mecz.typ}</span> |{' '}
-                <strong>Kurs:</strong> <span className="text-yellow-300">{mecz.kurs}</span> |{' '}
-                <strong>Szansa:</strong> <span className="text-yellow-300">{mecz.prawdopodobienstwo}%</span>
+                <strong>Liga:</strong> <span className="text-yellow-300">{mecz.strLeague}</span>
               </p>
-              <div className="text-gray-300 leading-relaxed whitespace-pre-wrap">
-                {mecz.analiza}
-              </div>
             </div>
           ))}
         </div>
