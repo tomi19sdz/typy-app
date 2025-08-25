@@ -2,14 +2,48 @@
 
 import { useEffect, useState } from 'react';
 
+// Zaktualizowany typ, aby pasował do danych z API-Sports
 type Typ = {
-  id: number;
-  strEvent: string;
-  strLeague: string;
-  strHomeTeam: string;
-  strAwayTeam: string;
-  dateEvent: string;
-  idLeague: string; // Dodano brakującą właściwość
+  fixture: {
+    id: number;
+    date: string;
+    venue: {
+      name: string;
+      city: string;
+    };
+    status: {
+      long: string;
+      short: string;
+      elapsed: number;
+    };
+  };
+  league: {
+    id: number;
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+    season: number;
+    round: string;
+  };
+  teams: {
+    home: {
+      id: number;
+      name: string;
+      logo: string;
+      winner: boolean | null;
+    };
+    away: {
+      id: number;
+      name: string;
+      logo: string;
+      winner: boolean | null;
+    };
+  };
+  goals: {
+    home: number | null;
+    away: number | null;
+  };
 };
 
 export default function AnalizaPage() {
@@ -20,7 +54,6 @@ export default function AnalizaPage() {
   useEffect(() => {
     const fetchTypy = async () => {
       try {
-        // Zmieniono apiUrl na /api/fetch-data
         const apiUrl = '/api/fetch-data';
         console.log('Attempting to fetch from:', apiUrl);
 
@@ -63,7 +96,6 @@ export default function AnalizaPage() {
     return <p className="text-center text-red-500 text-lg mt-8">Błąd: {error}</p>;
   }
   
-  // Zaktualizowano rendering, aby pokazać dane z TheSportsDB
   return (
     <section>
       <h1 className="text-3xl font-bold mb-6 text-center">Szczegółowe Analizy Typów</h1>
@@ -73,14 +105,20 @@ export default function AnalizaPage() {
         <div className="space-y-8">
           {typy.map((mecz) => (
             <div
-              key={mecz.idLeague}
+              key={mecz.fixture.id}
               className="bg-gray-800 p-6 rounded-lg shadow-xl border-l-4 border-green-500"
             >
               <h2 className="text-2xl font-semibold text-blue-400 mb-2">
-                {mecz.strHomeTeam} vs {mecz.strAwayTeam} ({mecz.dateEvent})
+                {mecz.teams.home.name} vs {mecz.teams.away.name} ({mecz.fixture.date.split('T')[0]})
               </h2>
               <p className="text-lg mb-4">
-                <strong>Liga:</strong> <span className="text-yellow-300">{mecz.strLeague}</span>
+                <strong>Liga:</strong> <span className="text-yellow-300">{mecz.league.name}</span>
+              </p>
+              <p className="text-lg mb-4">
+                <strong>Wynik:</strong>{' '}
+                <span className="text-yellow-300">
+                  {mecz.goals.home ?? '-'} : {mecz.goals.away ?? '-'}
+                </span>
               </p>
             </div>
           ))}

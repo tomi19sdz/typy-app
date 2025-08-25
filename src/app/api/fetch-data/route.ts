@@ -2,76 +2,105 @@
 import { NextResponse } from 'next/server';
 
 interface FootballEvent {
-  idLeague: string;
-  // Usunięto [key: string]: any; aby spełnić wymagania ESLint
-  strEvent: string;
-  strLeague: string;
-  strHomeTeam: string;
-  strAwayTeam: string;
-  dateEvent: string;
+  fixture: {
+    id: number;
+    date: string;
+    venue: {
+      name: string;
+      city: string;
+    };
+    status: {
+      long: string;
+      short: string;
+      elapsed: number;
+    };
+  };
+  league: {
+    id: number;
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+    season: number;
+    round: string;
+  };
+  teams: {
+    home: {
+      id: number;
+      name: string;
+      logo: string;
+      winner: boolean | null;
+    };
+    away: {
+      id: number;
+      name: string;
+      logo: string;
+      winner: boolean | null;
+    };
+  };
+  goals: {
+    home: number | null;
+    away: number | null;
+  };
+  score: {
+    halftime: {
+      home: number | null;
+      away: number | null;
+    };
+    fulltime: {
+      home: number | null;
+      away: number | null;
+    };
+    extratime: {
+      home: number | null;
+      away: number | null;
+    };
+    penalty: {
+      home: number | null;
+      away: number | null;
+    };
+  };
 }
 
 export async function GET() {
-  const newApiKey = "123";
+  const apiKey = process.env.FOOTBALL_API_KEY; 
   const today = new Date().toISOString().split('T')[0];
-  const newApiUrl = `https://www.thesportsdb.com/api/v1/json/${newApiKey}/eventsday.php?d=${today}&s=Soccer`;
 
-  const leagueIds = [
-    // English Premier League
-    '4328', 
-    // Polish Ekstraklasa
-    '4332', 
-    // Spanish La Liga
-    '4335',
-    // German Bundesliga
-    '4331',
-    // Italian Serie A
-    '4337',
-    // French Ligue 1
-    '4334'
-  ];
+  if (!apiKey) {
+    console.error('API key not found');
+    return NextResponse.json({ error: 'API key not found' }, { status: 500 });
+  }
 
   try {
-    const res = await fetch(newApiUrl, {
+    const res = await fetch(`https://v3.football.api-sports.io/fixtures?date=${today}`, {
+      headers: {
+        'x-rapidapi-key': apiKey,
+        'x-rapidapi-host': 'v3.football.api-sports.io'
+      },
       cache: 'no-store'
     });
 
     if (!res.ok) {
-      console.error(`API Error. Status:`, res.status, 'StatusText:', res.statusText);
-      return NextResponse.json({ error: 'Failed to fetch data from API', apiError: null }, { status: res.status });
+      console.error('Błąd z API. Status:', res.status, 'StatusText:', res.statusText);
+      const errorData = await res.json().catch(() => null);
+      return NextResponse.json({ error: 'Failed to fetch data from API', apiError: errorData }, { status: res.status });
+    }
+
+    const data = await res.json();
+    
+    if (!data || !data.response || data.response.length === 0) {
+      console.error('API zwróciło nieoczekiwane dane lub brak meczów:', data);
+      return NextResponse.json([], { status: 200 });
     }
     
-    const data = await res.json();
-
-    if (!data || !Array.isArray(data.events) || data.events.length === 0) {
-      console.error('API returned unexpected data or no events.');
-      // Zwróć pustą tablicę zamiast błędu, aby strona wyświetliła "Brak typów do wyświetlenia".
-      return NextResponse.json([], { status: 200 });
-    }
-
-    // Filter matches by League ID
-    const filteredEvents = data.events.filter((event: FootballEvent) => leagueIds.includes(event.idLeague));
-
-    if (filteredEvents.length === 0) {
-      console.error('No data for all leagues after filtering.');
-      // Zwróć pustą tablicę, gdy nie ma meczów dla wybranych lig.
-      return NextResponse.json([], { status: 200 });
-    }
-
-    // Return all data
-    return NextResponse.json(filteredEvents, {
+    return NextResponse.json(data.response, {
       headers: {
         'Cache-Control': 's-maxage=3600, stale-while-revalidate'
       }
     });
 
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-        console.error('Internal server error:', error.message);
-        return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
-    } else {
-        console.error('Internal server error:', 'Unknown error');
-        return NextResponse.json({ error: 'Internal server error', details: 'Unknown error' }, { status: 500 });
-    }
+  } catch (error: any) {
+    console.error('Wewnętrzny błąd serwera:', error.message);
+    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
   }
 }
