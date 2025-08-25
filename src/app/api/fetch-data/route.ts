@@ -3,7 +3,12 @@ import { NextResponse } from 'next/server';
 
 interface FootballEvent {
   idLeague: string;
-  [key: string]: any; // Allows for additional properties
+  // Usunięto [key: string]: any; aby spełnić wymagania ESLint
+  strEvent: string;
+  strLeague: string;
+  strHomeTeam: string;
+  strAwayTeam: string;
+  dateEvent: string;
 }
 
 export async function GET() {
