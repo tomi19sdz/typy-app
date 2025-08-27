@@ -14,8 +14,7 @@ export async function GET() {
     '3',
     '848'
   ];
-  const today = new Date().toISOString().split('T')[0];
-  const apiUrl = `https://v3.football.api-sports.io/fixtures?date=${today}&league=${leagueIds.join(',')}`;
+  const apiUrl = `https://v3.football.api-sports.io/fixtures?date=2024-05-25&league=${leagueIds.join(',')}`;
 
   // Logowanie URL-a, aby sprawdzić, czy jest poprawny
   console.log('Pobieram dane z URL-a:', apiUrl);
