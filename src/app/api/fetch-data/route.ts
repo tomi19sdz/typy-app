@@ -3,6 +3,28 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   const apiKey = process.env.FOOTBALL_API_KEY; 
+  // Poniższa tablica zawiera ID lig do pobrania z API.
+  // Możesz dodawać lub usuwać ID, aby dostosować widoczne ligi.
+  const leagueIds = [
+    // English Premier League
+    '39',
+    // Polish Ekstraklasa
+    '106', 
+    // Spanish La Liga
+    '140',
+    // German Bundesliga
+    '78',
+    // Italian Serie A
+    '135',
+    // French Ligue 1
+    '61',
+    // UEFA Champions League
+    '2',
+    // UEFA Europa League
+    '3',
+    // UEFA Europa Conference League
+    '848'
+  ];
   const today = new Date().toISOString().split('T')[0];
 
   if (!apiKey) {
@@ -11,7 +33,8 @@ export async function GET() {
   }
 
   try {
-    const res = await fetch(`https://v3.football.api-sports.io/fixtures?date=${today}`, {
+    // API-Sports pozwala na wyszukiwanie meczów po dacie i ID ligi
+    const res = await fetch(`https://v3.football.api-sports.io/fixtures?date=${today}&league=${leagueIds.join(',')}`, {
       headers: {
         'x-rapidapi-key': apiKey,
         'x-rapidapi-host': 'v3.football.api-sports.io'
@@ -40,7 +63,6 @@ export async function GET() {
 
   } catch (error: unknown) {
     console.error('Wewnętrzny błąd serwera:', error);
-    // Sprawdzenie, czy błąd jest instancją Error, aby uzyskać dostęp do message
     let errorMessage = 'Wystąpił nieznany błąd';
     if (error instanceof Error) {
         errorMessage = error.message;
