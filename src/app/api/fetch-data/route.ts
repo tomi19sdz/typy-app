@@ -13,7 +13,7 @@ export async function GET() {
 
   try {
     // Zaktualizowano datę w URL, aby pobrać mecze na 28 sierpnia 2025 r.
-    const res = await fetch('https://v3.football.api-sports.io/fixtures?date=2025-08-28', {
+    const res = await fetch('https://v3.football.api-sports.io/fixtures?date=2025-08-29', {
       headers: {
         'x-rapidapi-key': apiKey,
         'x-rapidapi-host': 'v3.football.api-sports.io'
