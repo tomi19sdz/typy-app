@@ -12,12 +12,8 @@ export async function GET() {
   }
 
   try {
-    // Zaktualizowano datę w URL, aby pobrać mecze na 28 sierpnia 2025 r.
-    const res = await fetch('https://v3.football.api-sports.io/fixtures?date=2025-08-29', {
-      headers: {
-        'x-rapidapi-key': apiKey,
-        'x-rapidapi-host': 'v3.football.api-sports.io'
-      },
+    // Zmieniono URL, aby był zgodny z darmowym API TheSportsDB
+    const res = await fetch('https://www.thesportsdb.com/api/v1/json/1/eventsnext.php?id=134010', {
       cache: 'no-store'
     });
 
@@ -29,14 +25,13 @@ export async function GET() {
 
     const data = await res.json();
     
-    if (!data || !data.response) {
+    if (!data || !data.events) {
       console.error('API zwróciło nieoczekiwane dane:', data);
       return NextResponse.json({ error: 'Unexpected data format from API' }, { status: 500 });
     }
 
-    // Ostateczna poprawka: zwracamy dane bezpośrednio,
-    // a Vercel zajmie się cachowaniem za nas dzięki nagłówkom.
-    return NextResponse.json(data.response, {
+    // Zwracamy dane bezpośrednio.
+    return NextResponse.json(data.events, {
       headers: {
         'Cache-Control': 's-maxage=3600, stale-while-revalidate'
       }
