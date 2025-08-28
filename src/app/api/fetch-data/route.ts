@@ -23,11 +23,11 @@ export async function GET() {
     // French Ligue 1
     '61'
   ];
-  const today = new Date().toISOString().split('T')[0];
-  const apiUrl = `https://v3.football.api-sports.io/fixtures?date=${today}&league=${leagueIds.join(',')}`;
+  // Zmieniamy datę na 2024-05-25, aby mieć pewność, że są mecze
+  const apiUrl = `https://v3.football.api-sports.io/fixtures?date=2024-05-25&league=${leagueIds.join(',')}`;
 
-  // Krok 1: Sprawdzenie, czy klucz API istnieje.
-  console.log('Sprawdzam klucz API. Wartość:', apiKey ? 'Istnieje' : 'Brak');
+  // Logowanie URL-a, aby sprawdzić, czy jest poprawny
+  console.log('Pobieram dane z URL-a:', apiUrl);
   
   if (!apiKey) {
     console.error('Błąd: Klucz API nie został znaleziony. Sprawdź zmienne środowiskowe na Vercelu.');
@@ -35,8 +35,6 @@ export async function GET() {
   }
 
   try {
-    // Krok 2: Wywołanie API z poprawnymi nagłówkami.
-    console.log('Wywołuję API z URL-em:', apiUrl);
     const res = await fetch(apiUrl, {
       headers: {
         'x-rapidapi-key': apiKey,
@@ -45,26 +43,19 @@ export async function GET() {
       cache: 'no-store'
     });
 
-    // Krok 3: Sprawdzenie odpowiedzi z API.
-    console.log('Odpowiedź API - Status:', res.status, 'StatusText:', res.statusText);
     if (!res.ok) {
+      console.error('Błąd z API. Status:', res.status, 'StatusText:', res.statusText);
       const errorData = await res.json().catch(() => null);
-      console.error('API zwróciło błąd:', errorData);
       return NextResponse.json({ error: 'Failed to fetch data from API', apiError: errorData }, { status: res.status });
     }
 
-    // Krok 4: Przetworzenie odpowiedzi i sprawdzenie danych.
     const data = await res.json();
-    console.log('Otrzymano surowe dane z API:', JSON.stringify(data));
     
-    // Upewniamy się, że odpowiedź zawiera tablicę 'response'.
     if (!data || !data.response || !Array.isArray(data.response)) {
       console.error('API zwróciło nieoczekiwane dane lub puste pole "response".');
-      // Zwracamy pustą tablicę, aby uniknąć błędów na frontendzie
       return NextResponse.json([], { status: 200 }); 
     }
 
-    // Krok 5: Zwrócenie danych.
     console.log(`Pomyślnie pobrano ${data.response.length} meczów.`);
     return NextResponse.json(data.response, {
       headers: {
@@ -73,7 +64,6 @@ export async function GET() {
     });
 
   } catch (error: unknown) {
-    // Krok 6: Obsługa błędów sieciowych.
     console.error('Wewnętrzny błąd serwera:', error);
     let errorMessage = 'Wystąpił nieznany błąd';
     if (error instanceof Error) {
