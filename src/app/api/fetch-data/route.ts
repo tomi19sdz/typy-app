@@ -42,8 +42,12 @@ export async function GET() {
       }
     });
 
-  } catch (error: any) {
-    console.error('Wewnętrzny błąd serwera:', error.message);
-    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+  } catch (error: unknown) { // Zmieniono 'any' na 'unknown'
+    let errorMessage = "Wystąpił nieznany błąd serwera.";
+    if (error instanceof Error) {
+        errorMessage = `Wewnętrzny błąd serwera: ${error.message}`;
+    }
+    console.error(errorMessage);
+    return NextResponse.json({ error: 'Internal server error', details: errorMessage }, { status: 500 });
   }
 }
