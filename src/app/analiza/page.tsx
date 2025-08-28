@@ -28,7 +28,7 @@ export default function AnalizaPage() {
 
         if (!response.ok) {
           const errorText = await response.text();
-          throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
+          throw new Error(`Błąd HTTP! Status: ${response.status}, Message: ${errorText}`);
         }
 
         const data = await response.json();
