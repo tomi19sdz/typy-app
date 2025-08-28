@@ -2,26 +2,14 @@
 
 import { useEffect, useState } from 'react';
 
-// Typ pasujący do odpowiedzi z API-Sports
+// Zaktualizowany typ, aby pasował do danych z TheSportsDB
 type Typ = {
-  fixture: {
-    id: number;
-    date: string;
-    venue: {
-      name: string;
-    };
-  };
-  league: {
-    name: string;
-  };
-  teams: {
-    home: {
-      name: string;
-    };
-    away: {
-      name: string;
-    };
-  };
+  id: string; // ID wydarzenia
+  strEvent: string; // Nazwa meczu, np. "Lech Poznań vs Cracovia"
+  strHomeTeam: string;
+  strAwayTeam: string;
+  dateEvent: string;
+  strLeague: string;
 };
 
 export default function LechTestPage() {
@@ -33,8 +21,10 @@ export default function LechTestPage() {
     const fetchLechTypy = async () => {
       try {
         setLoading(true);
-        // Zmieniamy ścieżkę do API, aby była poprawna
-        const response = await fetch('/api/lech-poznan');
+        // Używamy nowego API: TheSportsDB
+        // ID zespołu Lech Poznań w TheSportsDB to 134010
+        const teamId = '134010';
+        const response = await fetch(`https://www.thesportsdb.com/api/v1/json/60130162/eventsnext.php?id=${teamId}`);
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -42,8 +32,9 @@ export default function LechTestPage() {
         }
 
         const data = await response.json();
-        if (Array.isArray(data)) {
-          setTypy(data);
+        // TheSportsDB zwraca dane w polu 'events'
+        if (data && Array.isArray(data.events)) {
+          setTypy(data.events);
         } else {
           setError("Otrzymano nieprawidłowy format danych z serwera.");
         }
@@ -64,7 +55,7 @@ export default function LechTestPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-      <h1 className="text-3xl font-bold mb-8 text-center">Test dla Lecha Poznań (dzisiejsze mecze)</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center">Test dla Lecha Poznań (nadchodzące mecze)</h1>
       {loading ? (
         <p>Ładowanie danych...</p>
       ) : error ? (
@@ -73,17 +64,17 @@ export default function LechTestPage() {
         <div className="space-y-4 w-full max-w-2xl">
           {typy.map((mecz) => (
             <div
-              key={mecz.fixture.id}
+              key={mecz.id}
               className="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-blue-500"
             >
-              <h2 className="text-xl font-semibold">{mecz.teams.home.name} vs {mecz.teams.away.name}</h2>
-              <p>Data: {mecz.fixture.date.split('T')[0]}</p>
-              <p>Liga: {mecz.league.name}</p>
+              <h2 className="text-xl font-semibold">{mecz.strEvent}</h2>
+              <p>Liga: {mecz.strLeague}</p>
+              <p>Data: {mecz.dateEvent}</p>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-gray-400 text-center">Brak dzisiejszych meczów Lecha Poznań.</p>
+        <p className="text-gray-400 text-center">Brak nadchodzących meczów Lecha Poznań.</p>
       )}
     </div>
   );
