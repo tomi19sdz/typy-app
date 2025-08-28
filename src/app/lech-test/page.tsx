@@ -24,7 +24,8 @@ export default function LechTestPage() {
         // Używamy nowego API: TheSportsDB
         // ID zespołu Lech Poznań w TheSportsDB to 134010
         const teamId = '134010';
-        const response = await fetch(`https://www.thesportsdb.com/api/v1/json/60130162/eventsnext.php?id=${teamId}`);
+        // Poprawiony URL - zmieniono '60130162' na '1'
+        const response = await fetch(`https://www.thesportsdb.com/api/v1/json/1/eventsnext.php?id=${teamId}`);
 
         if (!response.ok) {
           const errorText = await response.text();
