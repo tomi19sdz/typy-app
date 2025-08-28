@@ -33,6 +33,7 @@ export default function LechTestPage() {
     const fetchLechTypy = async () => {
       try {
         setLoading(true);
+        // Zmieniamy ścieżkę do API, aby była poprawna
         const response = await fetch('/api/lech-poznan');
 
         if (!response.ok) {
