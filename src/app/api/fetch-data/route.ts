@@ -13,7 +13,7 @@ export async function GET() {
 
   try {
     // Zmieniono URL, aby był zgodny z darmowym API TheSportsDB
-    const res = await fetch('https://www.thesportsdb.com/api/v1/json/1/eventsnext.php?id=134010', {
+    const res = await fetch('https://www.thesportsdb.com/api/v1/json/123/searchevents.php?f=English_Premier_League_2015-04-26', {
       cache: 'no-store'
     });
 
