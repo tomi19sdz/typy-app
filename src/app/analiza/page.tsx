@@ -18,7 +18,7 @@ export default function AnalizaPage() {
       try {
         setLoading(true);
         // Zmieniono URL, aby pobrać dane Arsenalu
-        const response = await fetch(`https://www.thesportsdb.com/api/v1/json/1/searchteams.php?t=Arsenal`);
+        const response = await fetch(`https://www.thesportsdb.com/api/v1/json/123/searchteams.php?t=Arsenal`);
 
         if (!response.ok) {
           const errorText = await response.text();
