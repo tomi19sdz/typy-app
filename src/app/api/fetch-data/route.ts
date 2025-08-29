@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   const apiKey = process.env.FOOTBALL_API_KEY; 
   
-  // To powinno pojawić się w logach Vercela
+  // Wartość klucza API w serwerze:
   console.log('Wartość klucza API w serwerze:', apiKey);
 
   if (!apiKey) {
@@ -12,7 +12,7 @@ export async function GET() {
   }
 
   try {
-    // Zmieniono URL, aby był zgodny z darmowym API TheSportsDB
+    // Używamy tego samego URL, który podałeś
     const res = await fetch('https://www.thesportsdb.com/api/v1/json/123/lookupleague.php?id=4328', {
       cache: 'no-store'
     });
@@ -25,13 +25,14 @@ export async function GET() {
 
     const data = await res.json();
     
-    if (!data || !data.events) {
-      console.error('API zwróciło nieoczekiwane dane:', data);
-      return NextResponse.json({ error: 'Unexpected data format from API' }, { status: 500 });
+    // Zmieniono warunek sprawdzający na 'leagues', a nie 'events'
+    if (!data || !data.leagues || data.leagues.length === 0) {
+      console.error('API zwróciło nieoczekiwane dane lub brak lig:', data);
+      return NextResponse.json({ error: 'Unexpected data format or no leagues found' }, { status: 500 });
     }
 
-    // Zwracamy dane bezpośrednio.
-    return NextResponse.json(data.events, {
+    // Zwracamy dane, które pasują do struktury
+    return NextResponse.json(data.leagues, {
       headers: {
         'Cache-Control': 's-maxage=3600, stale-while-revalidate'
       }
