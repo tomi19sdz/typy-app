@@ -2,29 +2,23 @@
 
 import { useEffect, useState } from 'react';
 
-type Typ = {
-  id: string; // Używamy 'string', ponieważ ID w TheSportsDB to string.
-  strEvent: string;
-  strLeague: string;
-  strHomeTeam: string;
-  strAwayTeam: string;
-  dateEvent: string;
+type Team = {
+  idTeam: string;
+  strTeam: string;
+  strTeamBadge: string;
 };
 
 export default function AnalizaPage() {
-  const [typy, setTypy] = useState<Typ[]>([]);
+  const [team, setTeam] = useState<Team | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchTypy = async () => {
+    const fetchTeam = async () => {
       try {
         setLoading(true);
-        // Zmieniono apiUrl na bezpośredni URL do TheSportsDB,
-        // ponieważ API Route miało błędną konfigurację.
-        // Używamy ID zespołu Lech Poznań (134010)
-        const teamId = '134010';
-        const response = await fetch(`https://www.thesportsdb.com/api/v1/json/1/eventsnext.php?id=${teamId}`);
+        // Zmieniono URL, aby pobrać dane Arsenalu
+        const response = await fetch(`https://www.thesportsdb.com/api/v1/json/1/searchteams.php?t=Arsenal`);
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -33,11 +27,10 @@ export default function AnalizaPage() {
 
         const data = await response.json();
         
-        // TheSportsDB zwraca dane w polu 'events'
-        if (data && Array.isArray(data.events)) {
-          setTypy(data.events);
+        if (data && Array.isArray(data.teams) && data.teams.length > 0) {
+          setTeam(data.teams[0]);
         } else {
-          setError("Otrzymano nieprawidłowy format danych z serwera.");
+          setError("Nie znaleziono danych o drużynie.");
         }
       } catch (err: unknown) {
         if (err instanceof Error) {
@@ -51,39 +44,30 @@ export default function AnalizaPage() {
       }
     };
 
-    fetchTypy();
+    fetchTeam();
   }, []);
 
   if (loading) {
-    return <p className="text-center text-lg mt-8">Ładowanie analiz...</p>;
+    return <p className="text-center text-lg mt-8">Ładowanie...</p>;
   }
 
   if (error) {
     return <p className="text-center text-red-500 text-lg mt-8">Błąd: {error}</p>;
   }
   
-  // Zaktualizowano rendering, aby pokazać dane z TheSportsDB
   return (
     <section className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center">Szczegółowe Analizy Typów</h1>
-      {typy.length === 0 ? (
-        <p className="text-center text-lg mt-8">Brak typów do wyświetlenia.</p>
-      ) : (
-        <div className="space-y-8 w-full max-w-2xl">
-          {typy.map((mecz) => (
-            <div
-              key={mecz.id}
-              className="bg-gray-800 p-6 rounded-lg shadow-xl border-l-4 border-green-500"
-            >
-              <h2 className="text-2xl font-semibold text-blue-400 mb-2">
-                {mecz.strHomeTeam} vs {mecz.strAwayTeam} ({mecz.dateEvent})
-              </h2>
-              <p className="text-lg mb-4">
-                <strong>Liga:</strong> <span className="text-yellow-300">{mecz.strLeague}</span>
-              </p>
-            </div>
-          ))}
+      {team ? (
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-6">{team.strTeam}</h1>
+          <img 
+            src={team.strTeamBadge} 
+            alt={`Logo drużyny ${team.strTeam}`} 
+            className="mx-auto w-48 h-48 rounded-full border-4 border-green-500 shadow-lg"
+          />
         </div>
+      ) : (
+        <p className="text-center text-lg mt-8">Brak danych o drużynie do wyświetlenia.</p>
       )}
     </section>
   );
