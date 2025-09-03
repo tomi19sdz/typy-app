@@ -1,6 +1,14 @@
 // src/app/api/fetch-data/route.ts
 import { NextResponse } from 'next/server';
 
+// Definiujemy typ danych, które spodziewamy się otrzymać z API
+type TheSportsDBEvent = {
+  idLeague: string;
+  // Możesz dodać więcej pól, jeśli są potrzebne,
+  // np. strHomeTeam: string, strAwayTeam: string, dateEvent: string
+  [key: string]: any; 
+};
+
 export async function GET() {
   const newApiKey = "1";
   const today = new Date().toISOString().split('T')[0];
@@ -38,8 +46,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Brak dostępnych meczów dla wszystkich wybranych lig.' }, { status: 500 });
     }
 
-    // Filtrujemy mecze według ID lig
-    const filteredEvents = data.events.filter((event: any) => leagueIds.includes(event.idLeague));
+    // Używamy zdefiniowanego typu do filtrowania
+    const filteredEvents = data.events.filter((event: TheSportsDBEvent) => leagueIds.includes(event.idLeague));
 
     if (filteredEvents.length === 0) {
       console.error('Brak danych dla wszystkich lig po filtrowaniu.');
